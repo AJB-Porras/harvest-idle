@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <link rel="manifest" href="/harvest-idle/manifest.json">
+    <title>Harvest Idle Pro</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap');
+        * { margin:0; padding:0; box-sizing:border-box; }
+        :root {
+            --green-dark:#1a3a0a; --green-mid:#2d5016; --green:#4a7c2f; --green-light:#6aaa42;
+            --gold:#f5c518; --gold-dark:#d4a017; --orange:#ff9800; --purple:#7c4dff;
+            --red:#e53935; --bg:#f0f7e8; --card:#ffffff; --text:#1a2e0a;
+            --text-soft:#5a7a4a; --border:#c8e6a0;
+        }
+        body { font-family:'Nunito',sans-serif; background:linear-gradient(160deg,#1a3a0a 0%,#2d5016 50%,#1a3a0a 100%); min-height:100vh; display:flex; justify-content:center; align-items:flex-start; padding:8px; }
+        body.dark { --bg:#121a0a; --card:#1e2e12; --text:#e0f0c0; --text-soft:#8aaa6a; --border:#2a4a1a; }
+        .app { width:100%; max-width:480px; background:var(--bg); border-radius:24px; overflow:hidden; box-shadow:0 30px 80px rgba(0,0,0,0.5); display:flex; flex-direction:column; min-height:100vh; max-height:100vh; }
+
+        /* HEADER */
+        .header { background:linear-gradient(135deg,var(--green) 0%,var(--green-dark) 100%); padding:12px 16px 10px; }
+        .header-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+        .game-title { font-family:'Fredoka One',cursive; color:#fff; font-size:22px; text-shadow:2px 2px 0 rgba(0,0,0,0.3); }
+        .header-btns { display:flex; gap:6px; }
+        .icon-btn { background:rgba(255,255,255,0.15); border:none; color:white; width:36px; height:36px; border-radius:10px; cursor:pointer; font-size:16px; transition:all 0.2s; display:flex; align-items:center; justify-content:center; }
+        .icon-btn:hover { background:rgba(255,255,255,0.25); }
+        .stats-bar { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; }
+        .stat-pill { background:rgba(255,255,255,0.12); border-radius:10px; padding:6px 4px; text-align:center; }
+        .stat-label { color:rgba(255,255,255,0.7); font-size:9px; font-weight:600; }
+        .stat-val { color:#fff; font-size:13px; font-weight:800; display:block; }
+        .stat-val.gold { color:#f5c518; }
+        .event-strip { background:linear-gradient(90deg,rgba(255,235,59,0.25),rgba(255,152,0,0.25)); border-left:3px solid var(--gold); padding:5px 10px; margin-top:8px; border-radius:6px; font-size:11px; color:#fff; font-weight:700; display:none; animation:glow 1.5s ease-in-out infinite; }
+        @keyframes glow { 0%,100%{opacity:1} 50%{opacity:0.7} }
+        .prestige-banner { background:linear-gradient(90deg,#7c4dff,#b39ddb); padding:6px 16px; display:none; align-items:center; justify-content:space-between; font-size:11px; color:white; font-weight:700; cursor:pointer; }
+        .prestige-banner-btn { background:rgba(255,255,255,0.25); padding:3px 10px; border-radius:20px; font-size:10px; }
+
+        /* TABS */
+        .tab-bar { background:var(--card); border-bottom:2px solid var(--border); display:flex; overflow-x:auto; scrollbar-width:none; padding:0 4px; }
+        .tab-bar::-webkit-scrollbar { display:none; }
+        .tab-btn { flex-shrink:0; padding:10px 14px; border:none; background:none; color:var(--text-soft); font-family:'Nunito',sans-serif; font-size:11px; font-weight:700; cursor:pointer; position:relative; transition:all 0.2s; display:flex; flex-direction:column; align-items:center; gap:2px; }
+        .tab-btn .ti { font-size:18px; }
+        .tab-btn.active { color:var(--green); }
+        .tab-btn.active::after { content:''; position:absolute; bottom:0; left:20%; right:20%; height:3px; background:var(--green); border-radius:3px 3px 0 0; }
+
+        /* CONTENT */
+        .content { flex:1; overflow-y:auto; padding:12px; scrollbar-width:thin; scrollbar-color:var(--border) transparent; }
+        .tab-panel { display:none; }
+        .tab-panel.active { display:block; }
+
+        /* CLICKER */
+        .clicker-card { background:linear-gradient(135deg,#fff9e8,#fff3c8); border:2px solid #ffe082; border-radius:20px; padding:16px; text-align:center; margin-bottom:14px; }
+        .farm-btn { font-size:72px; cursor:pointer; user-select:none; display:inline-block; filter:drop-shadow(2px 4px 6px rgba(0,0,0,0.2)); transition:transform 0.1s; }
+        .farm-btn:active { transform:scale(0.88) rotate(-5deg); }
+        .farm-btn.bounce { animation:hBounce 0.4s ease-out; }
+        @keyframes hBounce { 0%{transform:scale(1)} 30%{transform:scale(0.85) rotate(-8deg)} 60%{transform:scale(1.1) rotate(3deg)} 100%{transform:scale(1)} }
+        .click-info { font-size:12px; color:#8a6a10; font-weight:600; margin-top:6px; }
+        .big-btn { background:linear-gradient(135deg,#ff9800,#f57c00); color:white; border:none; padding:10px 28px; border-radius:30px; font-family:'Fredoka One',cursive; font-size:16px; cursor:pointer; box-shadow:0 4px 0 #e65100,0 6px 15px rgba(255,152,0,0.4); transition:all 0.1s; margin-top:8px; }
+        .big-btn:active { transform:translateY(3px); box-shadow:0 1px 0 #e65100; }
+
+        /* SECTION HEADS */
+        .sec-head { display:flex; align-items:center; gap:8px; margin-bottom:10px; margin-top:4px; }
+        .sec-head h3 { font-family:'Fredoka One',cursive; color:var(--text); font-size:16px; }
+        .sec-badge { margin-left:auto; background:var(--green-light); color:white; font-size:10px; font-weight:700; padding:2px 8px; border-radius:20px; }
+
+        /* TOOLTIPS */
+        .tip-wrap { position:relative; display:inline-flex; align-items:center; }
+        .tip-icon { display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; background:var(--green-light); color:white; border-radius:50%; font-size:11px; font-weight:800; cursor:pointer; flex-shrink:0; }
+        .tip-box { display:none; position:absolute; left:50%; top:26px; transform:translateX(-50%); background:#1a2e0a; color:#e0f0c0; font-size:11px; font-weight:600; line-height:1.5; padding:8px 12px; border-radius:10px; width:200px; z-index:500; box-shadow:0 4px 20px rgba(0,0,0,0.4); pointer-events:none; }
+        .tip-box::before { content:''; position:absolute; top:-6px; left:50%; transform:translateX(-50%); border:6px solid transparent; border-bottom-color:#1a2e0a; border-top:none; }
+        .tip-icon:hover + .tip-box, .tip-icon:focus + .tip-box { display:block; }
+
+        /* ITEM GRID */
+        .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:14px; }
+        .item-card { background:var(--card); border:2px solid var(--border); border-radius:14px; padding:10px 8px; text-align:center; cursor:pointer; transition:all 0.15s; position:relative; }
+        .item-card:hover { border-color:var(--green); transform:translateY(-2px); box-shadow:0 4px 12px rgba(74,124,47,0.2); }
+        .item-card.no { opacity:0.5; cursor:not-allowed; }
+        .item-card.no:hover { transform:none; box-shadow:none; }
+        .ie { font-size:32px; margin-bottom:4px; }
+        .in { font-size:11px; font-weight:800; color:var(--text); margin-bottom:2px; }
+        .ip { font-size:10px; color:var(--text-soft); }
+        .io { position:absolute; top:6px; right:6px; background:var(--green); color:white; font-size:9px; font-weight:800; padding:1px 5px; border-radius:20px; }
+        .ic { background:linear-gradient(135deg,var(--gold),var(--gold-dark)); color:#3a2800; padding:3px 8px; border-radius:20px; font-size:10px; font-weight:800; margin-top:5px; display:inline-block; }
+
+        /* UPGRADE CARDS */
+        .up-card { background:var(--card); border:2px solid var(--border); border-radius:14px; padding:12px; display:flex; align-items:center; gap:10px; margin-bottom:8px; cursor:pointer; transition:all 0.15s; }
+        .up-card:hover { border-color:var(--green); }
+        .up-card.bought { border-color:var(--green-light); background:#f0f9e8; opacity:0.7; cursor:default; }
+        .up-icon { font-size:28px; }
+        .up-info { flex:1; }
+        .up-name { font-size:12px; font-weight:800; color:var(--text); }
+        .up-desc { font-size:10px; color:var(--text-soft); margin-top:1px; }
+        .up-cost { font-size:11px; font-weight:800; color:var(--gold-dark); }
+
+        /* PRESTIGE */
+        .pres-hero { background:linear-gradient(135deg,#1a0040,#4a0080,#7c4dff); border-radius:20px; padding:20px; text-align:center; color:white; margin-bottom:14px; position:relative; overflow:hidden; }
+        .pres-hero::before { content:'✨'; position:absolute; font-size:120px; opacity:0.08; top:-20px; right:-10px; }
+        .pres-stars { font-size:28px; letter-spacing:4px; margin-bottom:8px; }
+        .pres-hero h2 { font-family:'Fredoka One',cursive; font-size:22px; margin-bottom:6px; }
+        .pres-hero p { font-size:12px; opacity:0.85; line-height:1.5; margin-bottom:14px; }
+        .pres-gain { background:rgba(255,255,255,0.15); border-radius:12px; padding:10px; margin-bottom:14px; font-size:13px; font-weight:700; }
+        .seed-count { font-size:28px; font-family:'Fredoka One',cursive; color:var(--gold); }
+        .pres-btn { background:linear-gradient(135deg,var(--gold),#ff9800); color:#1a0040; border:none; padding:14px 30px; border-radius:30px; font-family:'Fredoka One',cursive; font-size:18px; cursor:pointer; box-shadow:0 4px 0 rgba(0,0,0,0.3); transition:all 0.1s; width:100%; }
+        .pres-btn:active { transform:translateY(3px); }
+        .pres-btn:disabled { opacity:0.4; cursor:not-allowed; }
+        .pres-tree { background:var(--card); border:2px solid var(--border); border-radius:16px; padding:14px; margin-bottom:10px; }
+        .pres-tree h3 { font-family:'Fredoka One',cursive; color:var(--text); font-size:15px; margin-bottom:10px; }
+        .seed-up { display:flex; align-items:center; gap:10px; padding:10px; border:2px solid var(--border); border-radius:12px; margin-bottom:8px; cursor:pointer; transition:all 0.15s; }
+        .seed-up:hover { border-color:var(--purple); }
+        .seed-up.maxed { border-color:var(--gold); background:linear-gradient(135deg,#fff8e1,#fff3c4); cursor:default; }
+        .seed-up.no { opacity:0.5; cursor:not-allowed; }
+        .su-icon { font-size:26px; }
+        .su-info { flex:1; }
+        .su-name { font-size:12px; font-weight:800; color:var(--text); }
+        .su-desc { font-size:10px; color:var(--text-soft); }
+        .su-cost { font-size:11px; color:var(--purple); font-weight:700; }
+        .su-lvl { background:var(--purple); color:white; padding:2px 8px; border-radius:20px; font-size:10px; font-weight:700; }
+
+        /* ACHIEVEMENTS */
+        .ach-card { display:flex; align-items:center; gap:10px; background:var(--card); border:2px solid var(--border); border-radius:12px; padding:10px; margin-bottom:8px; }
+        .ach-card.earned { border-color:var(--gold); background:linear-gradient(135deg,#fff8e1,#fff3c4); }
+        .ach-card.locked { opacity:0.5; filter:grayscale(0.6); }
+        .ai { font-size:28px; }
+        .ach-info { flex:1; }
+        .an { font-size:12px; font-weight:800; color:var(--text); }
+        .ad { font-size:10px; color:var(--text-soft); }
+        .ab { font-size:10px; color:var(--green); font-weight:700; }
+
+        /* MISSIONS */
+        .mis-card { background:var(--card); border:2px solid var(--border); border-radius:14px; padding:12px; margin-bottom:8px; }
+        .mis-card.done { border-color:var(--green-light); }
+        .mis-head { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+        .mi { font-size:22px; }
+        .mn { font-size:12px; font-weight:800; color:var(--text); flex:1; }
+        .mr { font-size:11px; color:var(--gold-dark); font-weight:700; }
+        .prog-bar { background:var(--border); border-radius:10px; height:8px; overflow:hidden; }
+        .prog-fill { height:100%; background:linear-gradient(90deg,var(--green),var(--green-light)); border-radius:10px; transition:width 0.4s ease; }
+        .prog-pct { font-size:10px; color:var(--text-soft); margin-top:3px; font-weight:600; }
+
+        /* GAMES */
+        .game-card { background:linear-gradient(135deg,#7c4dff,#4a148c); color:white; border-radius:18px; padding:16px; margin-bottom:10px; text-align:center; }
+        .game-card h3 { font-family:'Fredoka One',cursive; font-size:18px; margin-bottom:4px; }
+        .game-card p { font-size:11px; opacity:0.85; margin-bottom:12px; }
+        .ga-btn { background:white; border:none; padding:8px 20px; border-radius:20px; font-family:'Fredoka One',cursive; font-size:14px; cursor:pointer; transition:all 0.15s; }
+        .ga-btn:disabled { opacity:0.5; cursor:not-allowed; }
+        .spinner-wheel { width:90px; height:90px; margin:10px auto; background:conic-gradient(#ff5252 0deg 60deg,#ffd740 60deg 120deg,#69f0ae 120deg 180deg,#40c4ff 180deg 240deg,#e040fb 240deg 300deg,#ff9800 300deg 360deg); border-radius:50%; display:none; border:4px solid white; }
+        .spin-anim { animation:doSpin 2.2s cubic-bezier(0.17,0.67,0.12,0.99) forwards; }
+        @keyframes doSpin { 0%{transform:rotate(0deg)} 100%{transform:rotate(1440deg)} }
+
+        /* PETS */
+        .pet-card { background:linear-gradient(135deg,#fff3e0,#ffe0b2); border:2px solid #ffcc80; border-radius:14px; padding:12px; display:flex; align-items:center; gap:10px; margin-bottom:8px; cursor:pointer; transition:all 0.15s; }
+        .pet-card:hover { border-color:var(--orange); }
+        .pet-card.no { opacity:0.5; cursor:not-allowed; }
+        .pe { font-size:36px; }
+        .pet-info { flex:1; }
+        .pn { font-size:12px; font-weight:800; color:#5d3a00; }
+        .pb { font-size:10px; color:#8a5a00; }
+        .pc { font-size:10px; font-weight:700; color:var(--orange); }
+
+        /* STATS */
+        .stats-sec { background:var(--card); border:2px solid var(--border); border-radius:16px; padding:14px; margin-bottom:10px; }
+        .stat-row { display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid var(--border); font-size:12px; }
+        .stat-row:last-child { border-bottom:none; }
+        .sr-l { color:var(--text-soft); font-weight:600; }
+        .sr-v { font-weight:800; color:var(--text); }
+
+        /* FLOAT TEXT */
+        .float-txt { position:fixed; pointer-events:none; font-family:'Fredoka One',cursive; font-size:20px; color:var(--green); text-shadow:1px 1px 0 rgba(255,255,255,0.8); animation:floatUp 1s ease-out forwards; z-index:9999; }
+        .float-txt.gold { color:var(--gold-dark); }
+        .float-txt.purple { color:var(--purple); }
+        @keyframes floatUp { 0%{opacity:1;transform:translateY(0) scale(1)} 100%{opacity:0;transform:translateY(-70px) scale(0.7)} }
+
+        /* PRESTIGE OVERLAY */
+        .pres-overlay { position:fixed; inset:0; background:radial-gradient(circle,#7c4dff,#1a0040); z-index:9998; display:flex; flex-direction:column; align-items:center; justify-content:center; color:white; text-align:center; opacity:0; pointer-events:none; transition:opacity 0.3s; }
+        .pres-overlay.show { opacity:1; pointer-events:all; }
+        .pres-overlay h1 { font-family:'Fredoka One',cursive; font-size:36px; margin-bottom:10px; }
+        .pres-overlay p { font-size:16px; opacity:0.9; }
+        .star-rain { font-size:40px; animation:rainStar 1s ease-in-out infinite; }
+        @keyframes rainStar { 0%,100%{transform:scale(1)} 50%{transform:scale(1.3) rotate(20deg)} }
+
+        /* MODAL */
+        .modal-ov { position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:1000; display:none; align-items:center; justify-content:center; padding:20px; }
+        .modal-ov.open { display:flex; }
+        .modal-box { background:var(--bg); border-radius:20px; padding:20px; width:100%; max-width:380px; max-height:80vh; overflow-y:auto; }
+        .modal-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+        .modal-head h2 { font-family:'Fredoka One',cursive; color:var(--text); font-size:20px; }
+        .modal-close { background:none; border:none; font-size:24px; cursor:pointer; color:var(--text-soft); }
+        .set-row { margin-bottom:14px; }
+        .set-row label { font-size:12px; font-weight:700; color:var(--text); display:block; margin-bottom:6px; }
+        .set-btns { display:flex; gap:8px; }
+        .set-btn { flex:1; padding:8px; border:2px solid var(--border); border-radius:10px; background:var(--card); color:var(--text); font-family:'Nunito',sans-serif; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.15s; }
+        .set-btn.active { border-color:var(--green); background:var(--green); color:white; }
+        .danger-btn { width:100%; padding:10px; border:2px solid #ffcdd2; border-radius:10px; background:#fff5f5; color:var(--red); font-family:'Nunito',sans-serif; font-size:12px; font-weight:700; cursor:pointer; margin-top:6px; }
+
+        /* WELCOME */
+        .welcome-ov { position:fixed; inset:0; background:rgba(0,0,0,0.88); z-index:9500; display:flex; align-items:center; justify-content:center; padding:20px; }
+        .welcome-box { background:var(--bg); border-radius:24px; padding:24px; max-width:360px; width:100%; text-align:center; }
+        .welcome-box h2 { font-family:'Fredoka One',cursive; font-size:26px; color:var(--text); margin-bottom:6px; }
+        .welcome-box p { font-size:13px; color:var(--text-soft); line-height:1.6; margin-bottom:16px; }
+        .w-tips { text-align:left; background:var(--card); border-radius:14px; padding:14px; margin-bottom:16px; }
+        .w-tip { display:flex; align-items:flex-start; gap:10px; margin-bottom:10px; font-size:12px; color:var(--text); font-weight:600; }
+        .w-tip:last-child { margin-bottom:0; }
+        .w-tip-i { font-size:22px; flex-shrink:0; }
+        .w-start { background:linear-gradient(135deg,var(--green),var(--green-light)); color:white; border:none; padding:14px 30px; border-radius:30px; font-family:'Fredoka One',cursive; font-size:18px; cursor:pointer; width:100%; box-shadow:0 4px 0 var(--green-dark); transition:all 0.1s; }
+        .w-start:active { transform:translateY(3px); box-shadow:none; }
+    </style>
+</head>
+<body>
+<div class="app">
+    <div class="header">
+        <div class="header-top">
+            <div class="game-title">🌾 Harvest Idle</div>
+            <div class="header-btns">
+                <button class="icon-btn" id="soundBtn" onclick="toggleSound()" title="Sonido">🔊</button>
+                <button class="icon-btn" onclick="openSettings()">⚙️</button>
+            </div>
+        </div>
+        <div class="stats-bar">
+            <div class="stat-pill"><div class="stat-label">💰 DINERO</div><span class="stat-val" id="moneyD">0</span></div>
+            <div class="stat-pill"><div class="stat-label">⚡ /SEG</div><span class="stat-val" id="psD">0</span></div>
+            <div class="stat-pill"><div class="stat-label">✨ PRESTIGE</div><span class="stat-val gold" id="plD">0</span></div>
+            <div class="stat-pill"><div class="stat-label">🌱 SEMILLAS</div><span class="stat-val gold" id="sdD">0</span></div>
+        </div>
+        <div id="eventStrip" class="event-strip"></div>
+    </div>
+
+    <div id="presBanner" class="prestige-banner" onclick="switchTab('prestige')">
+        <span>✨ ¡Listo para hacer Prestige!</span>
+        <span class="prestige-banner-btn">Ver →</span>
+    </div>
+
+    <div class="tab-bar">
+        <button class="tab-btn active" onclick="switchTab('farm')" id="tb-farm"><span class="ti">🌾</span>Granja</button>
+        <button class="tab-btn" onclick="switchTab('machines')" id="tb-machines"><span class="ti">⚙️</span>Máquinas</button>
+        <button class="tab-btn" onclick="switchTab('workers')" id="tb-workers"><span class="ti">👨‍🌾</span>Equipo</button>
+        <button class="tab-btn" onclick="switchTab('upgrades')" id="tb-upgrades"><span class="ti">⬆️</span>Mejoras</button>
+        <button class="tab-btn" onclick="switchTab('prestige')" id="tb-prestige"><span class="ti">✨</span>Prestige</button>
+        <button class="tab-btn" onclick="switchTab('achievements')" id="tb-achievements"><span class="ti">🏆</span>Logros</button>
+        <button class="tab-btn" onclick="switchTab('missions')" id="tb-missions"><span class="ti">📝</span>Misiones</button>
+        <button class="tab-btn" onclick="switchTab('games')" id="tb-games"><span class="ti">🎮</span>Juegos</button>
+    </div>
+
+    <div class="content">
+        <!-- FARM -->
+        <div class="tab-panel active" id="panel-farm">
+            <div class="clicker-card">
+                <div class="farm-btn" id="farmBtn" onclick="handleClick(event)">🌾</div>
+                <div class="click-info">+<strong id="cvD">1</strong> por tap · Multiplicador: <strong id="mxD">x1.00</strong></div>
+                <button class="big-btn" onclick="handleClick(event)">¡Cosechar!</button>
+            </div>
+            <div class="sec-head">
+                <span>🐾</span><h3>Mascotas</h3>
+                <div class="tip-wrap"><span class="tip-icon">?</span><div class="tip-box">Las mascotas multiplican TODA tu producción. ¡Tener las 3 desbloquea un logro con bonus extra!</div></div>
+            </div>
+            <div id="petsD"></div>
+        </div>
+
+        <!-- MACHINES -->
+        <div class="tab-panel" id="panel-machines">
+            <div class="sec-head">
+                <span>⚙️</span><h3>Máquinas</h3>
+                <div class="tip-wrap"><span class="tip-icon">?</span><div class="tip-box">Producen dinero cada segundo automáticamente. Cada compra sube el precio un 15%. ¡Comprá muchas del mismo tipo!</div></div>
+                <span class="sec-badge" id="machB">0</span>
+            </div>
+            <div class="grid2" id="machD"></div>
+        </div>
+
+        <!-- WORKERS -->
+        <div class="tab-panel" id="panel-workers">
+            <div class="sec-head">
+                <span>👨‍🌾</span><h3>Trabajadores</h3>
+                <div class="tip-wrap"><span class="tip-icon">?</span><div class="tip-box">Producen más que las máquinas básicas. Combinalos con máquinas y mascotas para maximizar tu /seg.</div></div>
+                <span class="sec-badge" id="workB">0</span>
+            </div>
+            <div class="grid2" id="workD"></div>
+        </div>
+
+        <!-- UPGRADES -->
+        <div class="tab-panel" id="panel-upgrades">
+            <div class="sec-head">
+                <span>⬆️</span><h3>Mejoras</h3>
+                <div class="tip-wrap"><span class="tip-icon">?</span><div class="tip-box">Comprás con monedas normales y duran hasta el Prestige. ¡Comprá todas antes de ascender para sacar el máximo beneficio!</div></div>
+            </div>
+            <div id="upD"></div>
+        </div>
+
+        <!-- PRESTIGE -->
+        <div class="tab-panel" id="panel-prestige">
+            <div class="pres-hero">
+                <div class="pres-stars">✨🌟✨</div>
+                <h2>Ascensión
+                    <div class="tip-wrap" style="display:inline-flex;vertical-align:middle">
+                        <span class="tip-icon" style="background:rgba(255,255,255,0.3)">?</span>
+                        <div class="tip-box" style="color:#e0f0c0;background:#4a148c">Resetea tu granja pero ganás Semillas Doradas permanentes. Cada ascensión sube tu multiplicador global. ¡Las mejoras del árbol duran para siempre!</div>
+                    </div>
+                </h2>
+                <p>Resetea tu granja y ganás <strong>Semillas Doradas</strong>.<br>Úsalas en el árbol para mejoras permanentes.</p>
+                <div class="pres-gain">Ganarás: <span class="seed-count" id="sgD">0</span> 🌱 Semillas<br><span style="font-size:11px;opacity:0.8">Multiplicador actual: <strong id="cmD">x1.00</strong></span></div>
+                <button class="pres-btn" id="presBtn" onclick="doPrestige()" disabled>✨ Ascender</button>
+                <div style="font-size:10px;opacity:0.6;margin-top:8px" id="presMsg">Necesitás ganar más para activar el Prestige</div>
+            </div>
+            <div class="pres-tree">
+                <h3>🌱 Árbol de Semillas Doradas
+                    <div class="tip-wrap" style="display:inline-flex;vertical-align:middle;margin-left:4px">
+                        <span class="tip-icon">?</span>
+                        <div class="tip-box">Gastás Semillas Doradas aquí para mejoras que duran para siempre, incluso tras el Prestige. ¡Son la clave para crecer exponencialmente!</div>
+                    </div>
+                </h3>
+                <div id="suD"></div>
+            </div>
+            <div class="stats-sec">
+                <div class="sec-head" style="margin-bottom:10px"><span>📊</span><h3>Estadísticas</h3></div>
+                <div class="stat-row"><span class="sr-l">Nivel Prestige</span><span class="sr-v" id="stPL">0</span></div>
+                <div class="stat-row"><span class="sr-l">Semillas Doradas</span><span class="sr-v" id="stSD">0</span></div>
+                <div class="stat-row"><span class="sr-l">Total cosechado</span><span class="sr-v" id="stTC">0</span></div>
+                <div class="stat-row"><span class="sr-l">Multiplicador total</span><span class="sr-v" id="stMX">x1.00</span></div>
+                <div class="stat-row"><span class="sr-l">Runs completados</span><span class="sr-v" id="stRU">0</span></div>
+            </div>
+        </div>
+
+        <!-- ACHIEVEMENTS -->
+        <div class="tab-panel" id="panel-achievements">
+            <div class="sec-head">
+                <span>🏆</span><h3>Logros</h3>
+                <div class="tip-wrap"><span class="tip-icon">?</span><div class="tip-box">Cada logro da un bonus de producción permanente. ¡Sobreviven al Prestige!</div></div>
+                <span class="sec-badge" id="achB">0/0</span>
+            </div>
+            <div id="achD"></div>
+        </div>
+
+        <!-- MISSIONS -->
+        <div class="tab-panel" id="panel-missions">
+            <div class="sec-head">
+                <span>📝</span><h3>Misiones</h3>
+                <div class="tip-wrap"><span class="tip-icon">?</span><div class="tip-box">Completar misiones da grandes recompensas. ¡Algunas dan Semillas Doradas directamente!</div></div>
+            </div>
+            <div id="misD"></div>
+        </div>
+
+        <!-- GAMES -->
+        <div class="tab-panel" id="panel-games">
+            <div class="game-card">
+                <h3>🎰 Ruleta Diaria</h3>
+                <p>Una vez al día, girá y ganate monedas gratis</p>
+                <div class="spinner-wheel" id="spinW"></div>
+                <button class="ga-btn" id="roulBtn" onclick="playRoulette()" style="color:#7c4dff">🎲 Girar</button>
+            </div>
+            <div class="game-card" style="background:linear-gradient(135deg,#00695c,#004d40)">
+                <h3>🌧️ Lluvia de Monedas</h3>
+                <p>Tapéa 20 veces en 5 segundos y ganás 30 segundos de producción</p>
+                <button class="ga-btn" id="rainBtn" onclick="startRain()" style="color:#00695c">⚡ ¡Jugar!</button>
+                <div id="rainInfo" style="margin-top:8px;font-size:12px;display:none"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- WELCOME OVERLAY -->
+<div class="welcome-ov" id="welcomeOv">
+    <div class="welcome-box">
+        <div style="font-size:52px;margin-bottom:8px">🌾</div>
+        <h2>¡Bienvenido a<br>Harvest Idle!</h2>
+        <p>Construí tu granja desde cero y ascendé al infinito.</p>
+        <div class="w-tips">
+            <div class="w-tip"><div class="w-tip-i">👆</div><div>Tapéa la planta para cosechar. Cuanto más tapéas, más rápido creces al inicio.</div></div>
+            <div class="w-tip"><div class="w-tip-i">⚙️</div><div>Comprá <strong>Máquinas</strong> y contratá <strong>Trabajadores</strong> para producir dinero automáticamente.</div></div>
+            <div class="w-tip"><div class="w-tip-i">✨</div><div>Cuando tengas mucho dinero, hacé <strong>Prestige</strong> para ganar multiplicadores permanentes.</div></div>
+            <div class="w-tip"><div class="w-tip-i">❓</div><div>Tocá los íconos <strong>?</strong> azules en cada sección para entender qué hace cada cosa.</div></div>
+        </div>
+        <button class="w-start" onclick="closeWelcome()">🚜 ¡Empezar a Cosechar!</button>
+    </div>
+</div>
+
+<!-- PRESTIGE OVERLAY -->
+<div class="pres-overlay" id="presOv">
+    <div class="star-rain">🌟</div>
+    <h1>¡ASCENSIÓN!</h1>
+    <p id="ovMsg"></p>
+</div>
+
+<!-- SETTINGS MODAL -->
+<div class="modal-ov" id="settingsM">
+    <div class="modal-box">
+        <div class="modal-head">
+            <h2>⚙️ Ajustes</h2>
+            <button class="modal-close" onclick="closeSettings()">✕</button>
+        </div>
+        <div class="set-row">
+            <label>🎨 Tema</label>
+            <div class="set-btns">
+                <button class="set-btn active" id="tL" onclick="setTheme('light')">☀️ Claro</button>
+                <button class="set-btn" id="tD" onclick="setTheme('dark')">🌙 Oscuro</button>
+            </div>
+        </div>
+        <div class="set-row">
+            <label>🔊 Sonido</label>
+            <div class="set-btns">
+                <button class="set-btn active" id="sOn" onclick="setSoundPref(true)">🔊 Activado</button>
+                <button class="set-btn" id="sOff" onclick="setSoundPref(false)">🔇 Silencio</button>
+            </div>
+        </div>
+        <div class="set-row">
+            <label>📊 Versión 2.0.0</label>
+        </div>
+        <div class="set-row">
+            <label>💾 Datos</label>
+            <button class="danger-btn" onclick="resetGame()">🗑️ Reiniciar todo</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// ============================================================
+// SOUND SYSTEM
+// ============================================================
+let audioCtx = null;
+let soundOn = true;
+
+function getAC() {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    return audioCtx;
+}
+
+function snd(type) {
+    if (!soundOn) return;
+    try {
+        const ctx = getAC();
+        if (type === 'click') {
+            const o = ctx.createOscillator(), g = ctx.createGain();
+            o.connect(g); g.connect(ctx.destination);
+            o.type = 'sine';
+            o.frequency.setValueAtTime(520, ctx.currentTime);
+            o.frequency.exponentialRampToValueAtTime(380, ctx.currentTime + 0.08);
+            g.gain.setValueAtTime(0.15, ctx.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
+            o.start(); o.stop(ctx.currentTime + 0.12);
+        } else if (type === 'buy') {
+            const o = ctx.createOscillator(), g = ctx.createGain();
+            o.connect(g); g.connect(ctx.destination);
+            o.type = 'triangle';
+            o.frequency.setValueAtTime(400, ctx.currentTime);
+            o.frequency.exponentialRampToValueAtTime(700, ctx.currentTime + 0.15);
+            g.gain.setValueAtTime(0.18, ctx.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
+            o.start(); o.stop(ctx.currentTime + 0.2);
+        } else if (type === 'ach') {
+            [0,0.12,0.24].forEach((d,i) => {
+                const o = ctx.createOscillator(), g = ctx.createGain();
+                o.connect(g); g.connect(ctx.destination);
+                o.type = 'sine';
+                o.frequency.setValueAtTime([523,659,784][i], ctx.currentTime + d);
+                g.gain.setValueAtTime(0.2, ctx.currentTime + d);
+                g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + d + 0.18);
+                o.start(ctx.currentTime + d); o.stop(ctx.currentTime + d + 0.18);
+            });
+        } else if (type === 'prestige') {
+            [0,0.1,0.2,0.3,0.4].forEach((d,i) => {
+                const o = ctx.createOscillator(), g = ctx.createGain();
+                o.connect(g); g.connect(ctx.destination);
+                o.type = 'sine';
+                o.frequency.setValueAtTime([392,494,587,698,880][i], ctx.currentTime + d);
+                g.gain.setValueAtTime(0.22, ctx.currentTime + d);
+                g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + d + 0.25);
+                o.start(ctx.currentTime + d); o.stop(ctx.currentTime + d + 0.25);
+            });
+        } else if (type === 'event') {
+            const o = ctx.createOscillator(), g = ctx.createGain();
+            o.connect(g); g.connect(ctx.destination);
+            o.type = 'sawtooth';
+            o.frequency.setValueAtTime(220, ctx.currentTime);
+            o.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.3);
+            g.gain.setValueAtTime(0.08, ctx.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+            o.start(); o.stop(ctx.currentTime + 0.35);
+        } else if (type === 'win') {
+            const o = ctx.createOscillator(), g = ctx.createGain();
+            o.connect(g); g.connect(ctx.destination);
+            o.type = 'square';
+            o.frequency.setValueAtTime(300, ctx.currentTime);
+            o.frequency.exponentialRampToValueAtTime(600, ctx.currentTime + 0.3);
+            g.gain.setValueAtTime(0.1, ctx.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+            o.start(); o.stop(ctx.currentTime + 0.4);
+        }
+    } catch(e) {}
+}
+
+function toggleSound() {
+    soundOn = !soundOn;
+    document.getElementById('soundBtn').textContent = soundOn ? '🔊' : '🔇';
+    document.getElementById('sOn').classList.toggle('active', soundOn);
+    document.getElementById('sOff').classList.toggle('active', !soundOn);
+    localStorage.setItem('snd', soundOn);
+}
+
+function setSoundPref(val) {
+    soundOn = val;
+    document.getElementById('soundBtn').textContent = soundOn ? '🔊' : '🔇';
+    document.getElementById('sOn').classList.toggle('active', soundOn);
+    document.getElementById('sOff').classList.toggle('active', !soundOn);
+    localStorage.setItem('snd', soundOn);
+}
+
+// ============================================================
+// WELCOME
+// ============================================================
+function closeWelcome() {
+    document.getElementById('welcomeOv').style.display = 'none';
+    localStorage.setItem('seen', '1');
+    snd('buy');
+}
+
+// ============================================================
+// GAME STATE
+// ============================================================
+const DS = () => ({
+    money:0, totalHarvested:0, allTime:0,
+    prestigeLevel:0, prestigeRuns:0, goldenSeeds:0, spentSeeds:0,
+    machines:{
+        tractor:    {owned:0,baseCost:15,   prod:1.2,  name:'Tractor',        emoji:'🚜'},
+        watermill:  {owned:0,baseCost:120,  prod:7,    name:'Molino de Agua', emoji:'💧'},
+        windmill:   {owned:0,baseCost:700,  prod:30,   name:'Molino de Viento',emoji:'💨'},
+        greenhouse: {owned:0,baseCost:4000, prod:120,  name:'Invernadero',    emoji:'🏡'},
+        factory:    {owned:0,baseCost:25000,prod:600,  name:'Procesadora',    emoji:'🏭'},
+        lab:        {owned:0,baseCost:200000,prod:3000,name:'Laboratorio',    emoji:'🔬'},
+    },
+    workers:{
+        farmer:   {owned:0,baseCost:60,    prod:2.5,  name:'Granjero',   emoji:'👨‍🌾'},
+        manager:  {owned:0,baseCost:300,   prod:12,   name:'Capataz',    emoji:'👔'},
+        expert:   {owned:0,baseCost:2000,  prod:60,   name:'Experto',    emoji:'🧑‍💼'},
+        scientist:{owned:0,baseCost:15000, prod:350,  name:'Científico', emoji:'🔬'},
+        director: {owned:0,baseCost:100000,prod:2000, name:'Director',   emoji:'🎩'},
+    },
+    pets:{
+        chicken:{owned:0,baseCost:400,  bonus:1.12,name:'Gallina',emoji:'🐔'},
+        cow:    {owned:0,baseCost:1500, bonus:1.18,name:'Vaca',   emoji:'🐄'},
+        horse:  {owned:0,baseCost:8000, bonus:1.25,name:'Caballo',emoji:'🐎'},
+    },
+    upgrades:{
+        clickPower: {bought:false,baseCost:800,   name:'Guantes de Cosecha',desc:'x3 poder de click',              emoji:'🧤'},
+        autoHarvest:{bought:false,baseCost:3000,  name:'Auto-Cosecha',      desc:'+1/s por nivel de prestige',       emoji:'🤖'},
+        efficiency: {bought:false,baseCost:10000, name:'Fertilizante Pro',  desc:'+50% producción de máquinas',      emoji:'🌿'},
+        teamwork:   {bought:false,baseCost:50000, name:'Sindicato Granjero',desc:'+50% producción de trabajadores',  emoji:'🤝'},
+        golden:     {bought:false,baseCost:200000,name:'Arado Dorado',      desc:'x2 todo con prestige ≥ 3',         emoji:'🥇'},
+    },
+    seedUpgrades:{
+        seedBoost1:{level:0,maxLevel:5,baseCost:1,name:'Semilla Básica',  desc:'+10% producción por nivel', emoji:'🌱'},
+        seedClick: {level:0,maxLevel:5,baseCost:2,name:'Dedo Dorado',     desc:'+20% click por nivel',      emoji:'👆'},
+        seedCheap: {level:0,maxLevel:3,baseCost:3,name:'Descuento',       desc:'-10% costos por nivel',     emoji:'💰'},
+        seedMega:  {level:0,maxLevel:1,baseCost:15,name:'Mega Semilla',   desc:'x3 producción total (1x)',  emoji:'🌟'},
+        seedPets:  {level:0,maxLevel:3,baseCost:4,name:'Cuidador',        desc:'+15% bonus mascotas/nivel', emoji:'🐾'},
+    },
+    achievements:[
+        {id:'a1',name:'Primer Toque',     desc:'Tu primera cosecha',        emoji:'👶',bonus:0,   earned:false},
+        {id:'a2',name:'Emprendedor',      desc:'Gana 10,000',               emoji:'💼',bonus:2,   earned:false},
+        {id:'a3',name:'Granjero Rico',    desc:'Gana 1,000,000',            emoji:'🤑',bonus:5,   earned:false},
+        {id:'a4',name:'Tycoon',           desc:'Gana 1,000,000,000',        emoji:'💎',bonus:10,  earned:false},
+        {id:'a5',name:'Maquinista',       desc:'Compra 20 máquinas',        emoji:'⚙️',bonus:3,   earned:false},
+        {id:'a6',name:'Gran Empleador',   desc:'Contrata 20 trabajadores',  emoji:'👥',bonus:3,   earned:false},
+        {id:'a7',name:'Primer Prestige',  desc:'Primera ascensión',         emoji:'✨',bonus:5,   earned:false},
+        {id:'a8',name:'Ascensor',         desc:'5 ascensiones',             emoji:'🚀',bonus:8,   earned:false},
+        {id:'a9',name:'Coleccionista',    desc:'Tienes las 3 mascotas',     emoji:'🐾',bonus:4,   earned:false},
+        {id:'a10',name:'Todo Mejorado',   desc:'Comprás todas las mejoras', emoji:'⬆️',bonus:10,  earned:false},
+    ],
+    missions:[
+        {id:'m1',name:'Primera Cosecha',  type:'harvest',target:500,     reward:200,   rewarded:false,emoji:'🌾',seed:false},
+        {id:'m2',name:'Primer Equipo',    type:'workers', target:3,       reward:500,   rewarded:false,emoji:'👷',seed:false},
+        {id:'m3',name:'Industria',        type:'machines',target:5,       reward:1000,  rewarded:false,emoji:'⚙️',seed:false},
+        {id:'m4',name:'Millonario',       type:'money',   target:1000000, reward:50000, rewarded:false,emoji:'💰',seed:false},
+        {id:'m5',name:'Gran Cosechador',  type:'harvest', target:10000000,reward:500000,rewarded:false,emoji:'🏆',seed:false},
+        {id:'m6',name:'Primer Prestige',  type:'prestige',target:1,       reward:5,     rewarded:false,emoji:'✨',seed:true},
+        {id:'m7',name:'Veterano',         type:'prestige',target:5,       reward:15,    rewarded:false,emoji:'🌟',seed:true},
+    ],
+    perSecond:0,
+    clickValue:1,
+    currentEvent:null,
+    eventEndTime:0,
+    lastRouletteDay:'',
+    coinRainActive:false,
+    coinRainTaps:0,
+    coinRainEnd:0,
+});
+
+let G = DS();
+
+// ============================================================
+// UTILS
+// ============================================================
+function fmt(n) {
+    if(n>=1e15) return (n/1e15).toFixed(2)+'Q';
+    if(n>=1e12) return (n/1e12).toFixed(2)+'T';
+    if(n>=1e9)  return (n/1e9).toFixed(2)+'B';
+    if(n>=1e6)  return (n/1e6).toFixed(2)+'M';
+    if(n>=1e3)  return (n/1e3).toFixed(1)+'K';
+    return Math.floor(n).toString();
+}
+function totOwned(obj) { return Object.values(obj).reduce((s,v)=>s+v.owned,0); }
+function itemCost(base,owned) { return Math.floor(base * Math.pow(1.15, owned)); }
+function discount() { return Math.max(0.1, 1 - G.seedUpgrades.seedCheap.level * 0.10); }
+
+// ============================================================
+// MULTIPLIERS
+// ============================================================
+function prestigeMult() {
+    let b = 1 + G.prestigeLevel * 0.08;
+    b *= (1 + G.seedUpgrades.seedBoost1.level * 0.10);
+    if (G.seedUpgrades.seedMega.level > 0) b *= 3;
+    if (G.upgrades.golden.bought && G.prestigeLevel >= 3) b *= 2;
+    let achB = 0;
+    G.achievements.forEach(a => { if(a.earned) achB += a.bonus; });
+    b *= (1 + achB/100);
+    return b;
+}
+
+function clickMult() {
+    let b = 1;
+    if (G.upgrades.clickPower.bought) b *= 3;
+    b *= (1 + G.seedUpgrades.seedClick.level * 0.20);
+    return b;
+}
+
+function recalc() {
+    let ps = 0;
+    const mB = G.upgrades.efficiency.bought ? 1.5 : 1;
+    for(let k in G.machines) ps += G.machines[k].owned * G.machines[k].prod * mB;
+    const wB = G.upgrades.teamwork.bought ? 1.5 : 1;
+    for(let k in G.workers) ps += G.workers[k].owned * G.workers[k].prod * wB;
+    let petM = 1;
+    const petBP = 1 + G.seedUpgrades.seedPets.level * 0.15;
+    for(let k in G.pets) {
+        if(G.pets[k].owned > 0) petM *= (1 + (G.pets[k].bonus-1) * petBP);
+    }
+    ps *= petM;
+    if (G.upgrades.autoHarvest.bought) ps += G.prestigeLevel;
+    ps *= prestigeMult();
+    G.perSecond = ps;
+    G.clickValue = Math.max(1, Math.floor(Math.max(1, ps*0.3) * clickMult()));
+}
+
+// ============================================================
+// CLICK
+// ============================================================
+function handleClick(e) {
+    recalc();
+    snd('click');
+    const mult = prestigeMult();
+    const evM = G.currentEvent ? G.currentEvent.mult : 1;
+    const val = Math.max(1, G.clickValue) * evM;
+    G.money += val;
+    G.totalHarvested += val;
+    G.allTime += val;
+    if (G.coinRainActive) {
+        G.coinRainTaps++;
+        if (G.coinRainTaps >= 20) endRainWin();
+    }
+    const cx = e?(e.clientX||e.touches?.[0]?.clientX||200):200;
+    const cy = e?(e.clientY||e.touches?.[0]?.clientY||200):200;
+    floatTxt('+'+fmt(val), cx, cy, '');
+    const b = document.getElementById('farmBtn');
+    b.classList.remove('bounce'); void b.offsetWidth; b.classList.add('bounce');
+    checkMissions(); checkAch(); save(); render();
+}
+
+function floatTxt(t, x, y, cls) {
+    const el = document.createElement('div');
+    el.className = 'float-txt '+(cls||'');
+    el.textContent = t;
+    el.style.left = x+'px'; el.style.top = y+'px';
+    document.body.appendChild(el);
+    setTimeout(()=>el.remove(), 1000);
+}
+
+// ============================================================
+// BUY
+// ============================================================
+function buyMachine(k) {
+    const m = G.machines[k];
+    const cost = Math.floor(itemCost(m.baseCost,m.owned)*discount());
+    if(G.money<cost) return;
+    G.money-=cost; m.owned++;
+    snd('buy'); recalc(); checkMissions(); checkAch(); save(); render();
+}
+function buyWorker(k) {
+    const w = G.workers[k];
+    const cost = Math.floor(itemCost(w.baseCost,w.owned)*discount());
+    if(G.money<cost) return;
+    G.money-=cost; w.owned++;
+    snd('buy'); recalc(); checkMissions(); checkAch(); save(); render();
+}
+function buyPet(k) {
+    const p = G.pets[k];
+    const cost = Math.floor(itemCost(p.baseCost,p.owned)*discount());
+    if(G.money<cost) return;
+    G.money-=cost; p.owned++;
+    snd('buy'); recalc(); checkAch(); save(); render();
+}
+function buyUpgrade(k) {
+    const u = G.upgrades[k];
+    if(u.bought||G.money<u.baseCost) return;
+    G.money-=u.baseCost; u.bought=true;
+    snd('buy'); recalc(); checkAch(); save(); render();
+}
+function buySeedUp(k) {
+    const su = G.seedUpgrades[k];
+    if(su.level>=su.maxLevel) return;
+    const cost = su.baseCost*(su.level+1);
+    if(G.goldenSeeds<cost) return;
+    G.goldenSeeds-=cost; G.spentSeeds+=cost; su.level++;
+    snd('buy'); recalc(); save(); render();
+}
+
+// ============================================================
+// PRESTIGE
+// ============================================================
+function calcPrestigeGain() { return Math.floor(Math.sqrt(G.totalHarvested/5000)); }
+
+function doPrestige() {
+    const gain = calcPrestigeGain();
+    if(gain<=0) return;
+    snd('prestige');
+    G.goldenSeeds+=gain; G.prestigeLevel++; G.prestigeRuns++;
+    checkMissions();
+    G.money=0; G.totalHarvested=0;
+    for(let k in G.machines) G.machines[k].owned=0;
+    for(let k in G.workers)  G.workers[k].owned=0;
+    for(let k in G.pets)     G.pets[k].owned=0;
+    for(let k in G.upgrades) G.upgrades[k].bought=false;
+    recalc(); checkAch();
+    const ov = document.getElementById('presOv');
+    document.getElementById('ovMsg').textContent = '+'+gain+' 🌱 Semillas Doradas!';
+    ov.classList.add('show');
+    setTimeout(()=>{ ov.classList.remove('show'); switchTab('prestige'); }, 2500);
+    save(); render();
+}
+
+// ============================================================
+// EVENTS
+// ============================================================
+const EVTS = [
+    {name:'🌧️ Lluvia de Oro',   desc:'+100% por 20s', mult:2,   dur:20},
+    {name:'⚡ Rayo Afortunado', desc:'+60% por 30s',  mult:1.6, dur:30},
+    {name:'🌤️ Día Perfecto',    desc:'+30% por 60s',  mult:1.3, dur:60},
+    {name:'🦋 Mariposa Mágica', desc:'+80% por 15s',  mult:1.8, dur:15},
+];
+function triggerEvt() {
+    if(G.currentEvent||Math.random()>0.06) return;
+    const ev = EVTS[Math.floor(Math.random()*EVTS.length)];
+    G.currentEvent = ev;
+    snd('event');
+    const strip = document.getElementById('eventStrip');
+    strip.textContent = ev.name+' — '+ev.desc+'!';
+    strip.style.display = 'block';
+    setTimeout(()=>{ G.currentEvent=null; strip.style.display='none'; render(); }, ev.dur*1000);
+}
+
+// ============================================================
+// ACHIEVEMENTS
+// ============================================================
+function checkAch() {
+    const checks = [
+        ()=>G.allTime>=1,
+        ()=>G.allTime>=10000,
+        ()=>G.allTime>=1000000,
+        ()=>G.allTime>=1e9,
+        ()=>totOwned(G.machines)>=20,
+        ()=>totOwned(G.workers)>=20,
+        ()=>G.prestigeRuns>=1,
+        ()=>G.prestigeRuns>=5,
+        ()=>Object.values(G.pets).every(p=>p.owned>0),
+        ()=>Object.values(G.upgrades).every(u=>u.bought),
+    ];
+    G.achievements.forEach((a,i) => {
+        if(!a.earned && checks[i] && checks[i]()) {
+            a.earned=true;
+            snd('ach');
+            floatTxt('🏆 '+a.name, 150, 120, 'gold');
+        }
+    });
+}
+
+// ============================================================
+// MISSIONS
+// ============================================================
+function checkMissions() {
+    G.missions.forEach(m => {
+        if(m.rewarded) return;
+        let done = false;
+        if(m.type==='harvest' && G.allTime>=m.target) done=true;
+        if(m.type==='money'   && G.money>=m.target)   done=true;
+        if(m.type==='workers' && totOwned(G.workers)>=m.target) done=true;
+        if(m.type==='machines'&& totOwned(G.machines)>=m.target)done=true;
+        if(m.type==='prestige'&& G.prestigeRuns>=m.target)      done=true;
+        if(done) {
+            m.rewarded=true;
+            snd('win');
+            if(m.seed) {
+                G.goldenSeeds+=m.reward;
+                floatTxt('+'+m.reward+' 🌱', 150, 150, 'gold');
+            } else {
+                G.money+=m.reward;
+                floatTxt('+'+fmt(m.reward)+' 💰', 150, 150, 'gold');
+            }
+        }
+    });
+}
+
+// ============================================================
+// GAMES
+// ============================================================
+function playRoulette() {
+    const today = new Date().toDateString();
+    if(G.lastRouletteDay===today){ alert('¡Ya giraste hoy! Volvé mañana.'); return; }
+    const btn=document.getElementById('roulBtn'), w=document.getElementById('spinW');
+    btn.disabled=true; w.style.display='block';
+    w.classList.remove('spin-anim'); void w.offsetWidth; w.classList.add('spin-anim');
+    setTimeout(()=>{
+        const prizes=[500,1000,2500,5000,10000,25000];
+        const prize=prizes[Math.floor(Math.random()*prizes.length)];
+        G.money+=prize; G.lastRouletteDay=today;
+        w.style.display='none'; btn.disabled=false;
+        snd('ach');
+        floatTxt('🎉 +'+fmt(prize), 200, 200, 'gold');
+        save(); render();
+    }, 2300);
+}
+
+function startRain() {
+    if(G.coinRainActive) return;
+    G.coinRainActive=true; G.coinRainTaps=0; G.coinRainEnd=Date.now()+5000;
+    document.getElementById('rainBtn').disabled=true;
+    document.getElementById('rainInfo').style.display='block';
+    const iv = setInterval(()=>{
+        const left=Math.max(0,G.coinRainEnd-Date.now());
+        document.getElementById('rainInfo').textContent='⏱ '+(left/1000).toFixed(1)+'s | Taps: '+G.coinRainTaps+'/20';
+        if(left<=0){ clearInterval(iv); endRainFail(); }
+    },100);
+    G._rainIv=iv;
+}
+function endRainWin() {
+    clearInterval(G._rainIv); G.coinRainActive=false;
+    const bonus=Math.floor(G.perSecond*30);
+    G.money+=bonus; G.totalHarvested+=bonus; G.allTime+=bonus;
+    snd('ach');
+    document.getElementById('rainInfo').textContent='🎉 ¡Ganaste +'+fmt(bonus)+'!';
+    setTimeout(()=>{ document.getElementById('rainBtn').disabled=false; document.getElementById('rainInfo').style.display='none'; },2000);
+    floatTxt('+'+fmt(bonus), 200, 300, 'gold');
+    save(); render();
+}
+function endRainFail() {
+    G.coinRainActive=false;
+    document.getElementById('rainInfo').textContent='😞 No llegaste a 20 taps';
+    setTimeout(()=>{ document.getElementById('rainBtn').disabled=false; document.getElementById('rainInfo').style.display='none'; },1500);
+}
+
+// ============================================================
+// TABS
+// ============================================================
+function switchTab(name) {
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.getElementById('panel-'+name).classList.add('active');
+    const tb=document.getElementById('tb-'+name);
+    if(tb) tb.classList.add('active');
+    render();
+}
+
+// ============================================================
+// RENDER
+// ============================================================
+function render() {
+    recalc();
+    const mult = prestigeMult();
+    const evM = G.currentEvent ? G.currentEvent.mult : 1;
+
+    document.getElementById('moneyD').textContent = fmt(G.money);
+    document.getElementById('psD').textContent    = fmt(G.perSecond*evM);
+    document.getElementById('plD').textContent    = G.prestigeLevel;
+    document.getElementById('sdD').textContent    = G.goldenSeeds;
+    document.getElementById('cvD').textContent    = fmt(G.clickValue);
+    document.getElementById('mxD').textContent    = 'x'+mult.toFixed(2);
+
+    // Prestige banner
+    const gain = calcPrestigeGain();
+    document.getElementById('presBanner').style.display = gain>0 ? 'flex' : 'none';
+
+    // Machines
+    const mG = document.getElementById('machD'); mG.innerHTML='';
+    for(let k in G.machines) {
+        const m=G.machines[k];
+        const cost=Math.floor(itemCost(m.baseCost,m.owned)*discount());
+        const can=G.money>=cost;
+        const c=document.createElement('div');
+        c.className='item-card'+(can?'':' no');
+        c.innerHTML=`${m.owned>0?`<span class="io">${m.owned}</span>`:''}
+            <div class="ie">${m.emoji}</div>
+            <div class="in">${m.name}</div>
+            <div class="ip">+${fmt(m.prod*mult)}/s c/u</div>
+            <div class="ic">💰 ${fmt(cost)}</div>`;
+        c.onclick=()=>buyMachine(k);
+        mG.appendChild(c);
+    }
+    document.getElementById('machB').textContent=totOwned(G.machines);
+
+    // Workers
+    const wG = document.getElementById('workD'); wG.innerHTML='';
+    for(let k in G.workers) {
+        const w=G.workers[k];
+        const cost=Math.floor(itemCost(w.baseCost,w.owned)*discount());
+        const can=G.money>=cost;
+        const c=document.createElement('div');
+        c.className='item-card'+(can?'':' no');
+        c.innerHTML=`${w.owned>0?`<span class="io">${w.owned}</span>`:''}
+            <div class="ie">${w.emoji}</div>
+            <div class="in">${w.name}</div>
+            <div class="ip">+${fmt(w.prod*mult)}/s c/u</div>
+            <div class="ic">💰 ${fmt(cost)}</div>`;
+        c.onclick=()=>buyWorker(k);
+        wG.appendChild(c);
+    }
+    document.getElementById('workB').textContent=totOwned(G.workers);
+
+    // Pets
+    const pD = document.getElementById('petsD'); pD.innerHTML='';
+    for(let k in G.pets) {
+        const p=G.pets[k];
+        const cost=Math.floor(itemCost(p.baseCost,p.owned)*discount());
+        const can=G.money>=cost;
+        const petBP=1+G.seedUpgrades.seedPets.level*0.15;
+        const bonusPct=((p.bonus-1)*petBP*100).toFixed(0);
+        const c=document.createElement('div');
+        c.className='pet-card'+(can?'':' no');
+        c.innerHTML=`<div class="pe">${p.emoji}</div>
+            <div class="pet-info">
+                <div class="pn">${p.name}</div>
+                <div class="pb">+${bonusPct}% producción</div>
+                <div class="pc">Tienes: ${p.owned}</div>
+            </div>
+            <div style="text-align:right"><div class="ic" style="font-size:11px">💰 ${fmt(cost)}</div></div>`;
+        c.onclick=()=>buyPet(k);
+        pD.appendChild(c);
+    }
+
+    // Upgrades
+    const uD = document.getElementById('upD'); uD.innerHTML='';
+    for(let k in G.upgrades) {
+        const u=G.upgrades[k];
+        const can=G.money>=u.baseCost;
+        const c=document.createElement('div');
+        c.className='up-card'+(u.bought?' bought':(!can?' no':''));
+        c.innerHTML=`<div class="up-icon">${u.emoji}</div>
+            <div class="up-info">
+                <div class="up-name">${u.name}${u.bought?' ✅':''}</div>
+                <div class="up-desc">${u.desc}</div>
+                <div class="up-cost">${u.bought?'Comprado':'💰 '+fmt(u.baseCost)}</div>
+            </div>`;
+        if(!u.bought) c.onclick=()=>buyUpgrade(k);
+        uD.appendChild(c);
+    }
+
+    // Prestige tab
+    document.getElementById('sgD').textContent = gain;
+    document.getElementById('cmD').textContent = 'x'+mult.toFixed(2);
+    document.getElementById('presBtn').disabled = gain<=0;
+    document.getElementById('presMsg').style.display = gain>0?'none':'block';
+    document.getElementById('stPL').textContent = G.prestigeLevel;
+    document.getElementById('stSD').textContent = G.goldenSeeds;
+    document.getElementById('stTC').textContent = fmt(G.allTime);
+    document.getElementById('stMX').textContent = 'x'+mult.toFixed(2);
+    document.getElementById('stRU').textContent = G.prestigeRuns;
+
+    // Seed upgrades
+    const suD = document.getElementById('suD'); suD.innerHTML='';
+    for(let k in G.seedUpgrades) {
+        const su=G.seedUpgrades[k];
+        const maxed=su.level>=su.maxLevel;
+        const nextCost=maxed?0:su.baseCost*(su.level+1);
+        const can=!maxed&&G.goldenSeeds>=nextCost;
+        const c=document.createElement('div');
+        c.className='seed-up'+(maxed?' maxed':(!can?' no':''));
+        c.innerHTML=`<div class="su-icon">${su.emoji}</div>
+            <div class="su-info">
+                <div class="su-name">${su.name}</div>
+                <div class="su-desc">${su.desc}</div>
+                <div class="su-cost">${maxed?'¡Máximo!':'🌱 '+nextCost+' semillas'}</div>
+            </div>
+            <div class="su-lvl">${su.level}/${su.maxLevel}</div>`;
+        if(!maxed) c.onclick=()=>buySeedUp(k);
+        suD.appendChild(c);
+    }
+
+    // Achievements
+    const aD = document.getElementById('achD'); aD.innerHTML='';
+    let earned=0;
+    G.achievements.forEach(a => {
+        if(a.earned) earned++;
+        const c=document.createElement('div');
+        c.className='ach-card'+(a.earned?' earned':' locked');
+        c.innerHTML=`<div class="ai">${a.emoji}</div>
+            <div class="ach-info">
+                <div class="an">${a.name}</div>
+                <div class="ad">${a.desc}</div>
+                <div class="ab">+${a.bonus}% producción</div>
+            </div>
+            <div style="font-size:20px">${a.earned?'✅':'🔒'}</div>`;
+        aD.appendChild(c);
+    });
+    document.getElementById('achB').textContent=earned+'/'+G.achievements.length;
+
+    // Missions
+    const mD = document.getElementById('misD'); mD.innerHTML='';
+    G.missions.forEach(m => {
+        let prog=0;
+        if(m.type==='harvest') prog=Math.min(100,(G.allTime/m.target)*100);
+        if(m.type==='money')   prog=Math.min(100,(G.money/m.target)*100);
+        if(m.type==='workers') prog=Math.min(100,(totOwned(G.workers)/m.target)*100);
+        if(m.type==='machines')prog=Math.min(100,(totOwned(G.machines)/m.target)*100);
+        if(m.type==='prestige')prog=Math.min(100,(G.prestigeRuns/m.target)*100);
+        const c=document.createElement('div');
+        c.className='mis-card'+(m.rewarded?' done':'');
+        c.innerHTML=`<div class="mis-head">
+                <div class="mi">${m.emoji}</div>
+                <div class="mn">${m.name}</div>
+                <div class="mr">${m.rewarded?'✅':''} +${m.reward} ${m.seed?'🌱':'💰'}</div>
+            </div>
+            <div class="prog-bar"><div class="prog-fill" style="width:${prog}%"></div></div>
+            <div class="prog-pct">${Math.floor(prog)}%${m.rewarded?' — ¡Completada!':''}</div>`;
+        mD.appendChild(c);
+    });
+}
+
+// ============================================================
+// SETTINGS
+// ============================================================
+function openSettings()  { document.getElementById('settingsM').classList.add('open'); }
+function closeSettings() { document.getElementById('settingsM').classList.remove('open'); }
+function setTheme(t) {
+    document.body.classList.toggle('dark', t==='dark');
+    localStorage.setItem('theme', t);
+    document.getElementById('tL').classList.toggle('active', t==='light');
+    document.getElementById('tD').classList.toggle('active', t==='dark');
+}
+function resetGame() {
+    if(!confirm('¿Reiniciar todo? Se perderá todo el progreso.')) return;
+    localStorage.removeItem('hiv2');
+    G=DS(); recalc(); render(); closeSettings();
+}
+
+// ============================================================
+// SAVE / LOAD
+// ============================================================
+function save() { localStorage.setItem('hiv2', JSON.stringify(G)); }
+
+function load() {
+    const raw = localStorage.getItem('hiv2');
+    if(raw) {
+        try {
+            const sv = JSON.parse(raw);
+            G = deepMerge(DS(), sv);
+        } catch(e) {}
+    }
+    const t = localStorage.getItem('theme')||'light';
+    setTheme(t);
+    const s = localStorage.getItem('snd');
+    if(s==='false') { soundOn=false; document.getElementById('soundBtn').textContent='🔇'; document.getElementById('sOn').classList.remove('active'); document.getElementById('sOff').classList.add('active'); }
+    // Welcome
+    if(!localStorage.getItem('seen')) {
+        document.getElementById('welcomeOv').style.display='flex';
+    } else {
+        document.getElementById('welcomeOv').style.display='none';
+    }
+}
+
+function deepMerge(def, sv) {
+    const out={...def};
+    for(let k in sv) {
+        if(Array.isArray(def[k])&&Array.isArray(sv[k])) {
+            out[k]=def[k].map(di=>{
+                const si=sv[k].find(x=>x.id===di.id);
+                return si?{...di,earned:si.earned,rewarded:si.rewarded}:di;
+            });
+        } else if(typeof def[k]==='object'&&def[k]!==null&&typeof sv[k]==='object'&&sv[k]!==null) {
+            out[k]=deepMerge(def[k],sv[k]);
+        } else {
+            out[k]=sv[k]!==undefined?sv[k]:def[k];
+        }
+    }
+    return out;
+}
+
+// ============================================================
+// GAME LOOP
+// ============================================================
+load();
+recalc();
+render();
+
+setInterval(()=>{
+    const evM = G.currentEvent ? G.currentEvent.mult : 1;
+    const inc = G.perSecond * evM;
+    G.money+=inc; G.totalHarvested+=inc; G.allTime+=inc;
+    triggerEvt(); checkMissions(); checkAch(); save(); render();
+}, 1000);
+
+document.getElementById('settingsM').addEventListener('click', function(e){ if(e.target===this) closeSettings(); });
+</script>
+</body>
+</html>
