@@ -1,0 +1,13 @@
+{
+  "background_color": "#2d5016",
+  "dir": "ltr",
+  "display": "standalone",
+  "name": "Harvest Idle",
+  "orientation": "any",
+  "scope": "/",
+  "short_name": "Harvest Idle",
+  "start_url": "/",
+  "theme_color": "#4a7c2f",
+  "id": "com.andresblanco.harvestidle",
+  "description": "Un juego idle de granja donde administras cultivos y mejoras tu producción"
+}
