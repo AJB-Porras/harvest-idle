@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Harvest Idle Pro - Granja Avanzada</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #4a7c2f;
+            --secondary: #ff9800;
+            --accent: #ffeb3b;
+            --bg-light: #f5f5f5;
+            --bg-dark: #1a1a1a;
+            --text-dark: #333;
+            --text-light: #fff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #2d5016 0%, #1a3a0f 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            color: var(--text-dark);
+        }
+
+        body.dark-theme {
+            background: linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%);
+            --text-dark: #e0e0e0;
+        }
+
+        body.dark-theme .container {
+            background: #2a2a2a;
+            color: #e0e0e0;
+        }
+
+        body.dark-theme .item-card {
+            background: #333;
+            border-color: #444;
+            color: #e0e0e0;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 520px;
+            background: rgba(255, 255, 255, 0.97);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            max-height: 100vh;
+            transition: all 0.3s ease;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4a7c2f 0%, #2d5016 100%);
+            color: white;
+            padding: 15px 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            flex: 1;
+        }
+
+        .settings-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 20px;
+            transition: all 0.2s;
+        }
+
+        .settings-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .stat {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px;
+            border-radius: 8px;
+            font-size: 12px;
+            backdrop-filter: blur(10px);
+        }
+
+        .stat-value {
+            font-weight: bold;
+            font-size: 14px;
+            color: #ffeb3b;
+            display: block;
+        }
+
+        .event-banner {
+            background: rgba(255, 235, 59, 0.2);
+            border-left: 4px solid #ffeb3b;
+            padding: 8px 12px;
+            margin-top: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            color: white;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+        }
+
+        .clicker-section {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: linear-gradient(135deg, #fff9e6 0%, #ffe6b3 100%);
+            border-radius: 15px;
+            border: 3px solid #ffb347;
+        }
+
+        .farm-emoji {
+            font-size: 70px;
+            margin: 10px 0;
+            animation: bounce 0.6s ease-in-out infinite;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .clicker-section h2 {
+            color: #2d5016;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+
+        .clicker-section p {
+            color: #666;
+            font-size: 12px;
+            margin-bottom: 12px;
+        }
+
+        .click-button {
+            background: linear-gradient(135deg, #ffb347 0%, #ff9800 100%);
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.1s;
+            box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3);
+        }
+
+        .click-button:active {
+            transform: scale(0.95);
+            box-shadow: 0 2px 8px rgba(255, 152, 0, 0.3);
+        }
+
+        .section {
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            background: #2d5016;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 13px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .item-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .item-card:hover {
+            border-color: #4a7c2f;
+            box-shadow: 0 4px 12px rgba(74, 124, 47, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .item-emoji {
+            font-size: 35px;
+            margin-bottom: 6px;
+        }
+
+        .item-name {
+            font-weight: bold;
+            color: #2d5016;
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+
+        .item-info {
+            font-size: 10px;
+            color: #666;
+            line-height: 1.3;
+        }
+
+        .item-cost {
+            background: #ffeb3b;
+            color: #333;
+            padding: 4px 6px;
+            border-radius: 5px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-top: 6px;
+        }
+
+        .item-owned {
+            background: #4a7c2f;
+            color: white;
+            padding: 3px 6px;
+            border-radius: 5px;
+            font-size: 10px;
+            margin-top: 4px;
+        }
+
+        .disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            max-width: 400px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-close {
+            float: right;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .achievement {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border-left: 4px solid #ff9800;
+        }
+
+        .achievement.locked {
+            background: #f0f0f0;
+            color: #999;
+        }
+
+        .achievement-title {
+            font-weight: bold;
+            font-size: 12px;
+            margin-bottom: 2px;
+        }
+
+        .achievement-desc {
+            font-size: 11px;
+        }
+
+        .mini-game {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+
+        .mini-game h3 {
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .game-btn {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .spinner {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 10px;
+            background: conic-gradient(red, yellow, lime, cyan, blue, magenta, red);
+            border-radius: 50%;
+            animation: spin 3s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .bottom-nav {
+            background: #f5f5f5;
+            border-top: 2px solid #e0e0e0;
+            padding: 8px;
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            justify-content: space-between;
+        }
+
+        .nav-btn {
+            background: white;
+            border: 2px solid #ddd;
+            padding: 6px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            color: #666;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .nav-btn.active {
+            background: #4a7c2f;
+            color: white;
+            border-color: #4a7c2f;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .prestige-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .pet-card {
+            background: linear-gradient(135deg, #ffd89b 0%, #19547b 100%);
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .pet-emoji {
+            font-size: 40px;
+            margin-bottom: 8px;
+        }
+
+        .float-text {
+            position: fixed;
+            pointer-events: none;
+            font-weight: bold;
+            font-size: 18px;
+            color: #4a7c2f;
+            animation: float-up 1s ease-out forwards;
+            z-index: 999;
+        }
+
+        @keyframes float-up {
+            0% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-50px); }
+        }
+
+        .progress-bar {
+            background: #e0e0e0;
+            border-radius: 10px;
+            height: 10px;
+            margin: 8px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: #4a7c2f;
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 20px;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-row {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-top">
+                <h1>🚜 Harvest Idle Pro</h1>
+                <button class="settings-btn" onclick="openSettings()">⚙️</button>
+            </div>
+            <div class="stats-row">
+                <div class="stat">💰 <span class="stat-value" id="moneyDisplay">0</span></div>
+                <div class="stat">⚡ <span class="stat-value" id="perSecDisplay">0</span>/s</div>
+                <div class="stat">📈 <span class="stat-value" id="levelDisplay">1</span></div>
+            </div>
+            <div id="eventBanner" class="event-banner" style="display:none;"></div>
+        </div>
+
+        <div class="content">
+            <!-- GRANJA -->
+            <div id="farmTab" class="tab-content active">
+                <div class="clicker-section">
+                    <h2>¡Cosecha!</h2>
+                    <p>Tap para ganar dinero</p>
+                    <div class="farm-emoji" id="clickable" onclick="handleClick()">🌾</div>
+                    <button class="click-button" onclick="handleClick()">Cosechar</button>
+                    <div class="item-info" style="margin-top: 10px;">
+                        +<strong id="clickValue">1</strong> por tap
+                    </div>
+                </div>
+
+                <!-- Mascotas -->
+                <div class="section" id="petsSection" style="display:none;">
+                    <div class="section-title">🐓 Mascotas</div>
+                    <div id="petsContainer"></div>
+                </div>
+            </div>
+
+            <!-- MÁQUINAS -->
+            <div id="machinesTab" class="tab-content">
+                <div class="section">
+                    <div class="section-title">⚙️ Máquinas</div>
+                    <div class="grid" id="machinesContainer"></div>
+                </div>
+            </div>
+
+            <!-- TRABAJADORES -->
+            <div id="workersTab" class="tab-content">
+                <div class="section">
+                    <div class="section-title">👨‍🌾 Trabajadores</div>
+                    <div class="grid" id="workersContainer"></div>
+                </div>
+            </div>
+
+            <!-- MISIONES -->
+            <div id="missionsTab" class="tab-content">
+                <div class="section">
+                    <div class="section-title">📝 Misiones Diarias</div>
+                    <div id="missionsContainer"></div>
+                </div>
+            </div>
+
+            <!-- LOGROS -->
+            <div id="achievementsTab" class="tab-content">
+                <div class="section">
+                    <div class="section-title">🏆 Logros</div>
+                    <div id="achievementsContainer"></div>
+                </div>
+            </div>
+
+            <!-- MINI-JUEGOS -->
+            <div id="gamesTab" class="tab-content">
+                <div class="mini-game">
+                    <h3>🎰 Ruleta Diaria</h3>
+                    <div class="spinner" id="spinner" style="display:none;"></div>
+                    <button class="game-btn" onclick="playRoulette()">Girar (1x/día)</button>
+                </div>
+
+                <div class="mini-game">
+                    <h3>🎯 Juego de Memoria</h3>
+                    <button class="game-btn" onclick="playMemory()">Jugar</button>
+                </div>
+            </div>
+
+            <!-- PRESTIGE -->
+            <div id="prestigeTab" class="tab-content">
+                <div class="section">
+                    <div class="section-title">✨ Prestige</div>
+                    <div style="padding: 15px; background: #f0f0f0; border-radius: 8px; margin-bottom: 15px;">
+                        <p style="font-size: 12px; margin-bottom: 10px;">
+                            Resetea tu granja y gana <strong id="prestigeGain">0</strong> puntos de prestige permanentes (+5% dinero)
+                        </p>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="prestigeProgress" style="width: 0%;"></div>
+                        </div>
+                        <button class="prestige-btn" id="prestigeBtn" onclick="prestige()" style="display:none;">Reincarnate</button>
+                        <p style="font-size: 11px; color: #999; margin-top: 10px;">Necesitas llegar a un hito para desbloquear</p>
+                    </div>
+
+                    <div class="section" id="prestigeStatsSection">
+                        <div class="section-title">📊 Estadísticas</div>
+                        <div id="prestigeStats" style="font-size: 12px; line-height: 1.8; background: white; padding: 12px; border-radius: 8px;">
+                            <div>Nivel Prestige: <strong id="prestigeLevel">0</strong></div>
+                            <div>Total Cosechado: <strong id="totalCosechado">0</strong></div>
+                            <div>Mejor Racha: <strong id="mejorRacha">0</strong></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bottom-nav">
+            <button class="nav-btn active" onclick="switchTab('farmTab', this)">🌾</button>
+            <button class="nav-btn" onclick="switchTab('machinesTab', this)">⚙️</button>
+            <button class="nav-btn" onclick="switchTab('workersTab', this)">👨‍🌾</button>
+            <button class="nav-btn" onclick="switchTab('missionsTab', this)">📝</button>
+            <button class="nav-btn" onclick="switchTab('achievementsTab', this)">🏆</button>
+            <button class="nav-btn" onclick="switchTab('gamesTab', this)">🎮</button>
+            <button class="nav-btn" onclick="switchTab('prestigeTab', this)">✨</button>
+        </div>
+    </div>
+
+    <!-- MODALES -->
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeSettings()">×</button>
+            <h2>⚙️ Configuración</h2>
+            <hr style="margin: 12px 0;">
+            
+            <h3 style="font-size: 13px; margin: 12px 0 8px;">🎨 Tema</h3>
+            <button class="nav-btn" style="width: 100%; margin-bottom: 8px;" onclick="setTheme('light')">☀️ Claro</button>
+            <button class="nav-btn" style="width: 100%; margin-bottom: 12px;" onclick="setTheme('dark')">🌙 Oscuro</button>
+
+            <h3 style="font-size: 13px; margin: 12px 0 8px;">🔔 Notificaciones</h3>
+            <label style="font-size: 12px;">
+                <input type="checkbox" id="notificationToggle" checked onchange="toggleNotifications()">
+                Recordatorio cada 6 horas
+            </label>
+
+            <h3 style="font-size: 13px; margin: 12px 0 8px;">💾 Datos</h3>
+            <button class="game-btn" style="width: 100%; margin-bottom: 8px;" onclick="exportGame()">Descargar Datos</button>
+            <button class="game-btn" style="width: 100%; margin-bottom: 12px;" onclick="resetGame()">Reiniciar Juego</button>
+
+            <h3 style="font-size: 13px; margin: 12px 0 8px;">📊 Versión</h3>
+            <p style="font-size: 11px; color: #999;">Harvest Idle Pro v1.5.0</p>
+        </div>
+    </div>
+
+    <script>
+        // ============ ESTADO DEL JUEGO ============
+        let gameState = {
+            money: 0,
+            totalHarvested: 0,
+            level: 1,
+            clickValue: 1,
+            perSecond: 0,
+            prestigeLevel: 0,
+            prestigeBonus: 1,
+            lastRoulette: 0,
+
+            // Máquinas
+            machines: {
+                tractor: { owned: 0, cost: 10, production: 1, name: 'Tractor', emoji: '🚜' },
+                waterwheel: { owned: 0, cost: 100, production: 5, name: 'Molino de Agua', emoji: '💧' },
+                windmill: { owned: 0, cost: 500, production: 20, name: 'Molino de Viento', emoji: '💨' },
+                factory: { owned: 0, cost: 5000, production: 100, name: 'Procesadora', emoji: '🏭' }
+            },
+
+            // Trabajadores
+            workers: {
+                farmer: { owned: 0, cost: 50, production: 2, name: 'Granjero', emoji: '👨‍🌾' },
+                manager: { owned: 0, cost: 200, production: 8, name: 'Capataz', emoji: '👔' },
+                expert: { owned: 0, cost: 1000, production: 40, name: 'Experto', emoji: '🧑‍💼' }
+            },
+
+            // Mascotas (Feature 6)
+            pets: {
+                chicken: { owned: 0, cost: 300, bonus: 1.1, name: 'Gallina', emoji: '🐔' },
+                cow: { owned: 0, cost: 800, bonus: 1.15, name: 'Vaca', emoji: '🐄' }
+            },
+
+            // Misiones (Feature 7)
+            missions: [
+                { id: 1, name: 'Gana 1000', target: 1000, reward: 100, completed: false, type: 'earn' },
+                { id: 2, name: 'Compra 5 trabajadores', target: 5, reward: 200, completed: false, type: 'workers' },
+                { id: 3, name: 'Cosecha 50 veces', target: 50, reward: 150, completed: false, type: 'clicks' }
+            ],
+            missionsProgress: { earn: 0, workers: 0, clicks: 0 },
+
+            // Logros (Feature 3)
+            achievements: [
+                { id: 1, name: 'Primeros Pasos', desc: 'Gana 100', earned: false, emoji: '👶' },
+                { id: 2, name: 'Emprendedor', desc: 'Gana 10000', earned: false, emoji: '💼' },
+                { id: 3, name: 'Magnate', desc: 'Gana 1000000', earned: false, emoji: '💎' },
+                { id: 4, name: 'Recolector', desc: 'Compra 10 máquinas', earned: false, emoji: '🤖' },
+                { id: 5, name: 'Empleador', desc: 'Contrata 10 trabajadores', earned: false, emoji: '👥' },
+                { id: 6, name: 'Prestidigitador', desc: 'Usa prestige una vez', earned: false, emoji: '✨' }
+            ],
+
+            // Eventos aleatorios (Feature 1)
+            currentEvent: null,
+            eventEndTime: 0,
+
+            // Upgrades
+            upgrades: {
+                clickPower: { bought: false, cost: 500, effect: 5, name: 'Click Potente', emoji: '⭐' },
+                autoHarvest: { bought: false, cost: 2000, effect: 1, name: 'Auto-Cosecha', emoji: '🤖' }
+            }
+        };
+
+        // ============ FUNCIONES PRINCIPALES ============
+
+        function handleClick() {
+            const earnValue = gameState.clickValue * gameState.prestigeBonus;
+            gameState.money += earnValue;
+            gameState.totalHarvested += earnValue;
+            gameState.missionsProgress.clicks++;
+
+            const clickable = document.getElementById('clickable');
+            clickable.style.animation = 'none';
+            setTimeout(() => clickable.style.animation = 'bounce 0.6s ease-in-out infinite', 10);
+
+            showFloatText('+' + Math.floor(earnValue), event.clientX || event.touches?.[0].clientX || 250, event.clientY || event.touches?.[0].clientY || 250);
+            updateDisplay();
+            checkMissions();
+        }
+
+        function formatNumber(num) {
+            if (num >= 1e12) return (num / 1e12).toFixed(2) + 'T';
+            if (num >= 1e9) return (num / 1e9).toFixed(1) + 'B';
+            if (num >= 1e6) return (num / 1e6).toFixed(1) + 'M';
+            if (num >= 1e3) return (num / 1e3).toFixed(1) + 'K';
+            return Math.floor(num).toString();
+        }
+
+        function showFloatText(text, x, y) {
+            const el = document.createElement('div');
+            el.className = 'float-text';
+            el.textContent = text;
+            el.style.left = x + 'px';
+            el.style.top = y + 'px';
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 1000);
+        }
+
+        // ============ COMPRAS ============
+
+        function buyMachine(key) {
+            const machine = gameState.machines[key];
+            if (gameState.money >= machine.cost) {
+                gameState.money -= machine.cost;
+                machine.owned++;
+                recalculateProduction();
+                updateDisplay();
+            }
+        }
+
+        function buyWorker(key) {
+            const worker = gameState.workers[key];
+            if (gameState.money >= worker.cost) {
+                gameState.money -= worker.cost;
+                worker.owned++;
+                gameState.missionsProgress.workers++;
+                recalculateProduction();
+                updateDisplay();
+            }
+        }
+
+        function buyPet(key) {
+            const pet = gameState.pets[key];
+            if (gameState.money >= pet.cost) {
+                gameState.money -= pet.cost;
+                pet.owned++;
+                recalculateProduction();
+                updateDisplay();
+            }
+        }
+
+        // ============ CÁLCULOS ============
+
+        function recalculateProduction() {
+            gameState.perSecond = 0;
+
+            // Máquinas
+            for (let m in gameState.machines) {
+                gameState.perSecond += gameState.machines[m].owned * gameState.machines[m].production;
+            }
+
+            // Trabajadores
+            for (let w in gameState.workers) {
+                gameState.perSecond += gameState.workers[w].owned * gameState.workers[w].production;
+            }
+
+            // Mascotas (Feature 6)
+            let petBonus = 1;
+            for (let p in gameState.pets) {
+                if (gameState.pets[p].owned > 0) {
+                    petBonus *= gameState.pets[p].bonus;
+                }
+            }
+
+            gameState.perSecond *= petBonus;
+            gameState.clickValue = Math.max(1, Math.floor(gameState.perSecond / 2));
+        }
+
+        // ============ PRESTIGE (Feature 2) ============
+
+        function calculatePrestigeGain() {
+            return Math.max(0, Math.floor(Math.sqrt(gameState.totalHarvested / 1000)));
+        }
+
+        function prestige() {
+            const gain = calculatePrestigeGain();
+            if (gain === 0) return;
+
+            gameState.prestigeLevel += gain;
+            gameState.prestigeBonus = 1 + (gameState.prestigeLevel * 0.05);
+
+            // Reset
+            gameState.money = 0;
+            gameState.totalHarvested = 0;
+            for (let m in gameState.machines) gameState.machines[m].owned = 0;
+            for (let w in gameState.workers) gameState.workers[w].owned = 0;
+            for (let p in gameState.pets) gameState.pets[p].owned = 0;
+
+            recalculateProduction();
+            unlockAchievement(6);
+            updateDisplay();
+        }
+
+        // ============ LOGROS (Feature 3) ============
+
+        function unlockAchievement(id) {
+            const ach = gameState.achievements.find(a => a.id === id);
+            if (ach && !ach.earned) {
+                ach.earned = true;
+                showFloatText('🏆 ' + ach.name, 260, 100);
+            }
+        }
+
+        function checkAchievements() {
+            if (gameState.totalHarvested >= 100 && !gameState.achievements[0].earned) unlockAchievement(1);
+            if (gameState.totalHarvested >= 10000 && !gameState.achievements[1].earned) unlockAchievement(2);
+            if (gameState.totalHarvested >= 1000000 && !gameState.achievements[2].earned) unlockAchievement(3);
+
+            let totalMachines = Object.values(gameState.machines).reduce((a, m) => a + m.owned, 0);
+            if (totalMachines >= 10 && !gameState.achievements[3].earned) unlockAchievement(4);
+
+            let totalWorkers = Object.values(gameState.workers).reduce((a, w) => a + w.owned, 0);
+            if (totalWorkers >= 10 && !gameState.achievements[4].earned) unlockAchievement(5);
+        }
+
+        // ============ MISIONES (Feature 7) ============
+
+        function checkMissions() {
+            gameState.missions.forEach(m => {
+                if (!m.completed) {
+                    if (m.type === 'earn' && gameState.money >= m.target) {
+                        m.completed = true;
+                        gameState.money += m.reward;
+                    } else if (m.type === 'workers' && gameState.missionsProgress.workers >= m.target) {
+                        m.completed = true;
+                        gameState.money += m.reward;
+                    } else if (m.type === 'clicks' && gameState.missionsProgress.clicks >= m.target) {
+                        m.completed = true;
+                        gameState.money += m.reward;
+                    }
+                }
+            });
+        }
+
+        // ============ EVENTOS ALEATORIOS (Feature 1) ============
+
+        const events = [
+            { name: '🌧️ Lluvia de Oro', desc: '+100% dinero', multiplier: 2, duration: 20 },
+            { name: '⚡ Rayo Afortunado', desc: '+50% dinero', multiplier: 1.5, duration: 30 },
+            { name: '🌤️ Día Perfecto', desc: '+25% dinero', multiplier: 1.25, duration: 60 }
+        ];
+
+        function triggerRandomEvent() {
+            if (Math.random() < 0.15) {
+                const event = events[Math.floor(Math.random() * events.length)];
+                gameState.currentEvent = event;
+                gameState.eventEndTime = Date.now() + (event.duration * 1000);
+
+                const banner = document.getElementById('eventBanner');
+                banner.textContent = event.name + ' - ' + event.desc + '!';
+                banner.style.display = 'block';
+
+                setTimeout(() => {
+                    gameState.currentEvent = null;
+                    banner.style.display = 'none';
+                }, event.duration * 1000);
+            }
+        }
+
+        // ============ MINI-JUEGOS (Feature 5) ============
+
+        function playRoulette() {
+            const today = new Date().toDateString();
+            const lastRoulettDay = localStorage.getItem('lastRouletteDay');
+            if (lastRoulettDay === today) return alert('Ya giraste hoy!');
+
+            const spinner = document.getElementById('spinner');
+            spinner.style.display = 'block';
+            spinner.style.animation = 'none';
+
+            setTimeout(() => {
+                spinner.style.animation = 'spin 3s linear infinite';
+            }, 10);
+
+            setTimeout(() => {
+                const amounts = [100, 250, 500, 1000, 2500];
+                const prize = amounts[Math.floor(Math.random() * amounts.length)];
+                gameState.money += prize;
+                spinner.style.display = 'none';
+                showFloatText('🎉 +' + prize, 260, 300);
+                localStorage.setItem('lastRouletteDay', today);
+                updateDisplay();
+            }, 3000);
+        }
+
+        function playMemory() {
+            alert('🎮 Mini-juego de memoria (próximamente)\nGana dinero extra completándolo!');
+        }
+
+        // ============ DISPLAY ============
+
+        function updateDisplay() {
+            document.getElementById('moneyDisplay').textContent = formatNumber(gameState.money);
+            document.getElementById('perSecDisplay').textContent = formatNumber(gameState.perSecond);
+            document.getElementById('levelDisplay').textContent = gameState.prestigeLevel;
+
+            updateMachinesDisplay();
+            updateWorkersDisplay();
+            updatePetsDisplay();
+            updateMissionsDisplay();
+            updateAchievementsDisplay();
+            updatePrestigeDisplay();
+
+            checkAchievements();
+            saveGame();
+        }
+
+        function updateMachinesDisplay() {
+            const container = document.getElementById('machinesContainer');
+            container.innerHTML = '';
+            for (let key in gameState.machines) {
+                const m = gameState.machines[key];
+                const canAfford = gameState.money >= m.cost;
+                const card = document.createElement('div');
+                card.className = 'item-card' + (!canAfford ? ' disabled' : '');
+                card.innerHTML = `
+                    <div class="item-emoji">${m.emoji}</div>
+                    <div class="item-name">${m.name}</div>
+                    <div class="item-info">+${formatNumber(m.production)}/s</div>
+                    <div class="item-owned">Tienes: ${m.owned}</div>
+                    <div class="item-cost">💰 ${formatNumber(m.cost)}</div>
+                `;
+                card.onclick = () => buyMachine(key);
+                container.appendChild(card);
+            }
+        }
+
+        function updateWorkersDisplay() {
+            const container = document.getElementById('workersContainer');
+            container.innerHTML = '';
+            for (let key in gameState.workers) {
+                const w = gameState.workers[key];
+                const canAfford = gameState.money >= w.cost;
+                const card = document.createElement('div');
+                card.className = 'item-card' + (!canAfford ? ' disabled' : '');
+                card.innerHTML = `
+                    <div class="item-emoji">${w.emoji}</div>
+                    <div class="item-name">${w.name}</div>
+                    <div class="item-info">+${formatNumber(w.production)}/s</div>
+                    <div class="item-owned">Contratados: ${w.owned}</div>
+                    <div class="item-cost">💰 ${formatNumber(w.cost)}</div>
+                `;
+                card.onclick = () => buyWorker(key);
+                container.appendChild(card);
+            }
+        }
+
+        function updatePetsDisplay() {
+            const section = document.getElementById('petsSection');
+            const container = document.getElementById('petsContainer');
+
+            const hasPets = Object.values(gameState.pets).some(p => p.owned > 0) || gameState.money >= 300;
+            section.style.display = hasPets ? 'block' : 'none';
+
+            container.innerHTML = '';
+            for (let key in gameState.pets) {
+                const p = gameState.pets[key];
+                const canAfford = gameState.money >= p.cost;
+                const card = document.createElement('div');
+                card.className = 'pet-card' + (!canAfford ? ' disabled' : '');
+                card.innerHTML = `
+                    <div class="pet-emoji">${p.emoji}</div>
+                    <div class="item-name">${p.name}</div>
+                    <div class="item-info">+${Math.round((p.bonus - 1) * 100)}% producción</div>
+                    <div class="item-owned">Tienes: ${p.owned}</div>
+                    <div class="item-cost">💰 ${formatNumber(p.cost)}</div>
+                `;
+                card.onclick = () => buyPet(key);
+                container.appendChild(card);
+            }
+        }
+
+        function updateMissionsDisplay() {
+            const container = document.getElementById('missionsContainer');
+            container.innerHTML = '';
+            gameState.missions.forEach(m => {
+                const card = document.createElement('div');
+                card.className = 'achievement' + (m.completed ? '' : '');
+                let progress = 0;
+                if (m.type === 'earn') progress = Math.min(100, (gameState.money / m.target) * 100);
+                if (m.type === 'workers') progress = Math.min(100, (gameState.missionsProgress.workers / m.target) * 100);
+                if (m.type === 'clicks') progress = Math.min(100, (gameState.missionsProgress.clicks / m.target) * 100);
+
+                card.innerHTML = `
+                    <div class="achievement-title">${m.completed ? '✅' : '⏳'} ${m.name}</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${progress}%; background: #ff9800;"></div>
+                    </div>
+                    <div class="achievement-desc">Recompensa: <strong>+${m.reward}</strong></div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function updateAchievementsDisplay() {
+            const container = document.getElementById('achievementsContainer');
+            container.innerHTML = '';
+            gameState.achievements.forEach(a => {
+                const card = document.createElement('div');
+                card.className = 'achievement' + (!a.earned ? ' locked' : '');
+                card.innerHTML = `
+                    <div class="achievement-title">${a.emoji} ${a.name}</div>
+                    <div class="achievement-desc">${a.desc}</div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function updatePrestigeDisplay() {
+            const gain = calculatePrestigeGain();
+            document.getElementById('prestigeGain').textContent = gain;
+            document.getElementById('prestigeProgress').style.width = Math.min(100, (gameState.totalHarvested / (gain > 0 ? gameState.totalHarvested : 1000)) * 100) + '%';
+            document.getElementById('prestigeBtn').style.display = gain > 0 ? 'block' : 'none';
+            document.getElementById('prestigeLevel').textContent = gameState.prestigeLevel;
+            document.getElementById('totalCosechado').textContent = formatNumber(gameState.totalHarvested);
+            document.getElementById('mejorRacha').textContent = gameState.prestigeLevel * 1000;
+        }
+
+        // ============ TABS ============
+
+        function switchTab(tabName, button) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            button.classList.add('active');
+        }
+
+        // ============ CONFIGURACIÓN ============
+
+        function openSettings() {
+            document.getElementById('settingsModal').classList.add('active');
+        }
+
+        function closeSettings() {
+            document.getElementById('settingsModal').classList.remove('active');
+        }
+
+        function setTheme(theme) {
+            document.body.classList.toggle('dark-theme', theme === 'dark');
+            localStorage.setItem('theme', theme);
+            closeSettings();
+        }
+
+        function toggleNotifications() {
+            localStorage.setItem('notifications', document.getElementById('notificationToggle').checked);
+        }
+
+        function exportGame() {
+            const data = JSON.stringify(gameState, null, 2);
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'harvest-idle-save.json';
+            a.click();
+        }
+
+        function resetGame() {
+            if (confirm('¿Estás seguro? Se perderán todos los datos.')) {
+                localStorage.removeItem('harvestIdleGame');
+                location.reload();
+            }
+        }
+
+        // ============ GUARDADO ============
+
+        function saveGame() {
+            localStorage.setItem('harvestIdleGame', JSON.stringify(gameState));
+        }
+
+        function loadGame() {
+            const saved = localStorage.getItem('harvestIdleGame');
+            if (saved) gameState = JSON.parse(saved);
+
+            const theme = localStorage.getItem('theme');
+            if (theme === 'dark') document.body.classList.add('dark-theme');
+
+            updateDisplay();
+        }
+
+        // ============ INICIALIZACIÓN ============
+
+        loadGame();
+        setInterval(() => {
+            const eventMultiplier = gameState.currentEvent ? gameState.currentEvent.multiplier : 1;
+            gameState.money += gameState.perSecond * eventMultiplier;
+            gameState.totalHarvested += gameState.perSecond * eventMultiplier;
+            if (Math.random() < 0.05) triggerRandomEvent();
+            updateDisplay();
+        }, 1000);
+
+        // Eventos táctiles
+        document.getElementById('clickable').addEventListener('touchstart', handleClick);
+        document.addEventListener('click', (e) => {
+            if (e.target.id === 'settingsModal') closeSettings();
+        });
+    </script>
+</body>
+</html>
